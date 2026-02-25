@@ -79,6 +79,9 @@ func (s *APIV1Service) SetMemoAttachments(ctx context.Context, request *v1pb.Set
 		if tempAttachment == nil {
 			return nil, status.Errorf(codes.NotFound, "attachment not found: %s", attachmentUID)
 		}
+		if tempAttachment.CreatorID != user.ID && !isSuperUser(user) {
+			return nil, status.Errorf(codes.PermissionDenied, "permission denied: cannot link another user's attachment")
+		}
 		updatedTs := time.Now().Unix() + int64(index)
 		if err := s.Store.UpdateAttachment(ctx, &store.UpdateAttachment{
 			ID:        tempAttachment.ID,
