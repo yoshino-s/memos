@@ -159,6 +159,9 @@ func (s *APIV1Service) CreateAttachment(ctx context.Context, request *v1pb.Creat
 		if memo == nil {
 			return nil, status.Errorf(codes.NotFound, "memo not found: %s", *request.Attachment.Memo)
 		}
+		if memo.CreatorID != user.ID && !isSuperUser(user) {
+			return nil, status.Errorf(codes.PermissionDenied, "permission denied: cannot attach to another user's memo")
+		}
 		create.MemoID = &memo.ID
 	}
 	attachment, err := s.Store.CreateAttachment(ctx, create)
